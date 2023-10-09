@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Stock Data</title>
+    <!-- your other head elements here -->
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+
+      h1 {
+        color: #333;
+        margin-top: 100px;
+      }
+
+      form {
+        margin-top: 20px;
+        display: flex;
+        align-items: center;
+      }
+
+      label {
+        margin-right: 10px;
+      }
+
+      input[type="text"] {
+        padding: 8px;
+        font-size: 16px;
+      }
+
+      button {
+        padding: 8px 20px;
+        font-size: 16px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+
+      .stock-info {
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      @media only screen and (min-width: 140px) and (max-width: 1000px) {
+        h1 {
+          margin-top: 200px;
+        }
+        body {
+          font-size: 21px;
+        }
+        .stock-info {
+          margin-top: 20px;
+          padding: 10px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+        }
+        p {
+          display: flex;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Stock Data</h1>
+
+    <form action="/" method="POST">
+      <label for="symbol">Enter Stock Symbol:</label>
+      <input type="text" id="symbol" name="symbol" required />
+      <button type="submit">Get Stock Data</button>
+    </form>
+
+    {% if stock_data %}
+    <h2>Stock Information</h2>
+    <p>Company Name: {{ stock_data.company_name }}</p>
+    <p>Symbol: {{ stock_data.symbol }}</p>
+    <p>Current Price: {{ stock_data.current_price }} INR</p>
+    <p>Day High: {{ stock_data.day_high }} INR</p>
+    <p>Day Low: {{ stock_data.day_low }} INR</p>
+
+    <!-- Chart.js Canvas for Stock Data -->
+    <canvas id="stockChart" width="400" height="200"></canvas>
+
+    <h2>Moving Average Strategy Result</h2>
+    {% if strategy_result %}
+    <ul>
+      {% for key, value in strategy_result.items() %}
+      <li>{{ key }}: {{ value }}</li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>No strategy result available.</p>
+    {% endif %}
+
+    <script>
+      // JavaScript code for rendering the chart
+      var ctx = document.getElementById('stockChart').getContext('2d');
+      var chartData = {
+          labels: {{ stock_data.timestamps|tojson|safe }},
+          datasets: [{
+              label: 'Stock Price (INR)',
+              data: {{ stock_data.close_prices|tojson|safe }},
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1,
+              fill: false
+          }]
+      };
+      var stockChart = new Chart(ctx, {
+          type: 'line',
+          data: chartData,
+          options: {
+              scales: {
+                  x: {
+                      type: 'time',
+                      time: {
+                          unit: 'day'
+                      }
+                  },
+                  y: {
+                      beginAtZero: false
+                  }
+              }
+          }
+      });
+    </script>
+    {% endif %}
+  </body>
+</html>
